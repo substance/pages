@@ -2,7 +2,7 @@ const b = require('substance-bundler')
 const fs = require('fs')
 const path = require('path')
 
-const transpile = require('./lib/transpile')
+const { generate } = require('./index')
 
 b.task('clean', () => {
   b.rm('dist')
@@ -10,10 +10,10 @@ b.task('clean', () => {
 })
 
 b.task('demo', ['clean'], () => {
-  transpile(b, {
+  generate(b, {
     pages: 'demo/*.jsx',
     partials: 'demo/partials/*.jsx',
-    out: 'dist/demo',
+    out: 'tmp/demo',
     rootDir: path.join(__dirname, 'demo'),
     assets: [
       'demo/*.css'
