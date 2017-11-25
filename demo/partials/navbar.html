@@ -1,0 +1,28 @@
+<%
+/*
+  This example demonstrates usage of scriptlets
+  to solve problems that need some programming.
+  TODO: at some point, it makes to write a renderer right away.
+*/
+function _renderNavItem(target) {
+  let current = context.getCurrentPage()
+  let disabled = (target === current)
+  let classNames = ["nav-item",target].join(' ')
+  let href = './'+target+'.html'
+  // Example for using labels
+  let label = context.getLabel('nav:'+target)
+  if (disabled) {
+    return $$('span').addClass(classNames+' disabled')
+      .attr({ href, disabled })
+      .text(label)
+  } else {
+    return $$('a').addClass(classNames)
+      .attr({ href })
+      .text(label)
+  }
+}
+%>
+
+<div class="navigation">
+  <% ['index', 'a', 'b'].map(_renderNavItem) %>
+</div>

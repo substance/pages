@@ -9,14 +9,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "antlr4": "^4.7.0",
     "substance-bundler": "^0.19.2"
   },
   "dependencies": {
+    "escodegen": "^1.9.0",
+    "esprima": "^4.0.0",
+    "fs-extra": "^4.0.2",
+    "glob": "^7.1.2",
+    "html-tag-names": "^1.1.2",
     "minimatch": "^3.0.4",
-    "substance": "1.0.0-preview.9",
-    "babel-core": "^6.26.0",
-    "babel-plugin-transform-react-jsx": "^6.24.1",
-    "babel-template": "^6.26.0",
-    "babylon": "^6.18.0"
+    "substance": "1.0.0-preview.9"
   }
 }
