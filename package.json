@@ -4,6 +4,7 @@
   "description": "Static site generator using Substance.",
   "main": "index.js",
   "scripts": {
+    "prepublish": "node make",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
