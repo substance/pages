@@ -1,10 +1,10 @@
-const { DefaultDOMElement, Component } = require('substance')
+import { DefaultDOMElement, Component } from 'substance'
 
 /*
   This is passed as 'context' to renderers, and as usual
   in Components for dependency injection
 */
-module.exports = class RenderContext {
+export default class RenderContext {
 
   constructor(components, renderers, labels) {
     this.components = components

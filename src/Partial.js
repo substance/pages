@@ -1,6 +1,6 @@
-const { Component } = require('substance')
+import { Component } from 'substance'
 
-module.exports = class Partial extends Component {
+export default class Partial extends Component {
 
   render($$) {
     const src = this.props.src

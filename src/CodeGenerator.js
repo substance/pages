@@ -1,8 +1,9 @@
-const htmlTagNames = new Set(require('html-tag-names'))
-const { DefaultDOMElement, map, flattenOften } = require('substance')
-const HTMLParserListener = require('./html/HTMLParserListener').HTMLParserListener
-const b = require('./esprima-builder')
+import _htmlTagNames from 'html-tag-names'
+import { DefaultDOMElement, map, flattenOften } from 'substance'
+import { HTMLParserListener } from './htmlparser'
+import * as b from './astUtils'
 
+const htmlTagNames = new Set(_htmlTagNames)
 const SCRIPTLET_RE = /^(?:<%|{{)(.*)(?:%>|}})$/
 
 const MODULE_TEMPLATE = function({ COMPONENTS, CUSTOMBLOCKS, ELEMENT }) {
@@ -64,7 +65,7 @@ const SET_INNERHTML = function({ELEMENT, HTML}) {
   return _CALL(ELEMENT, 'html', [HTML])
 }
 
-module.exports = class CodeGenerator extends HTMLParserListener {
+export default class CodeGenerator extends HTMLParserListener {
 
   constructor() {
     super()
@@ -383,5 +384,4 @@ module.exports = class CodeGenerator extends HTMLParserListener {
       outerHTML: ctx.getText()
     })
   }
-
 }

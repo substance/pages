@@ -1,14 +1,14 @@
-const esprima = require('esprima')
-const escodegen = require('escodegen')
+import esprima from 'esprima'
+import escodegen from 'escodegen'
 
-function identifier(name) {
+export function identifier(name) {
   return {
     "type": "Identifier",
     "name": name
   }
 }
 
-function stringLiteral(str) {
+export function stringLiteral(str) {
   return {
     "type": "Literal",
     "value": str,
@@ -16,7 +16,7 @@ function stringLiteral(str) {
   }
 }
 
-function program(statements) {
+export function program(statements) {
   return {
     "type": "Program",
     "body": statements,
@@ -24,14 +24,14 @@ function program(statements) {
   }
 }
 
-function expressionStatement(expr) {
+export function expressionStatement(expr) {
   return {
     "type": "ExpressionStatement",
     "expression": expr
   }
 }
 
-function callExpression(callee, args) {
+export function callExpression(callee, args) {
   return {
     "type": "CallExpression",
     "callee": callee,
@@ -39,7 +39,7 @@ function callExpression(callee, args) {
   }
 }
 
-function memberExpression(object, propName) {
+export function memberExpression(object, propName) {
   return {
     "type": "MemberExpression",
     "computed": false,
@@ -48,14 +48,14 @@ function memberExpression(object, propName) {
   }
 }
 
-function objectExpression(properties) {
+export function objectExpression(properties) {
   return {
     "type": "ObjectExpression",
     "properties": properties
   }
 }
 
-function property(kind, key, value) {
+export function property(kind, key, value) {
   return {
     "type": "Property",
     "key": stringLiteral(key),
@@ -67,7 +67,7 @@ function property(kind, key, value) {
   }
 }
 
-function assignmentExpression(left, right) {
+export function assignmentExpression(left, right) {
   return {
     "type": "AssignmentExpression",
     "operator": "=",
@@ -76,14 +76,14 @@ function assignmentExpression(left, right) {
   }
 }
 
-function returnStatement(ret) {
+export function returnStatement(ret) {
   return {
     "type": "ReturnStatement",
     "argument": ret
   }
 }
 
-function functionExpression(id, params, body) {
+export function functionExpression(id, params, body) {
   return {
     "type": "FunctionExpression",
     "id": null,
@@ -98,7 +98,7 @@ function functionExpression(id, params, body) {
   }
 }
 
-function variableDeclaration(kind, decls) {
+export function variableDeclaration(kind, decls) {
   return {
     "type": "VariableDeclaration",
     "declarations": decls,
@@ -106,7 +106,7 @@ function variableDeclaration(kind, decls) {
   }
 }
 
-function variableDeclarator(id, init) {
+export function variableDeclarator(id, init) {
   return {
     "type": "VariableDeclarator",
     "id": identifier(id),
@@ -114,41 +114,11 @@ function variableDeclarator(id, init) {
   }
 }
 
-function parseStatement(code) {
+export function parseStatement(code) {
   let ast = esprima.parse(code)
   return ast.body[0]
 }
 
-function generate(ast) {
+export function generate(ast) {
   return escodegen.generate(ast)
 }
-
-module.exports = {
-  identifier,
-  stringLiteral,
-  program,
-  objectExpression,
-  memberExpression,
-  callExpression,
-  expressionStatement,
-  property,
-  assignmentExpression,
-  functionExpression,
-  returnStatement,
-  variableDeclaration,
-  variableDeclarator,
-  parseStatement,
-  generate
-}
-
-/*
-`
-$$(Partial, {
-  src: 'partials/nav',
-  current: 'a'
-}).append(
-  $$('h1')
-    .attr({ 'class': 'nav' })
-    .append('Hello World')
-)`
-*/
