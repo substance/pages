@@ -11,7 +11,7 @@
   "devDependencies": {
     "antlr4": "^4.7.0",
     "browserify": "^14.5.0",
-    "substance-bundler": "^0.19.2",
+    "substance-bundler": "^0.19.3",
     "substance-test": "^0.9.4"
   },
   "dependencies": {
