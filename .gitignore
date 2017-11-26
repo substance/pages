@@ -9,4 +9,5 @@ tmp
 .test
 .doc
 .docs
+.bin
 build

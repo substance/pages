@@ -85,7 +85,9 @@ b.task('lib:browser', () => {
   })
 })
 
-b.task('tests', ['lib'], () => {
+b.task('lib', ['lib:cjs', 'lib:browser'])
+
+b.task('tests', ['lib:browser'], () => {
   b.js('test/**/*.test.js', {
     dest: 'build/tests.js',
     format: 'umd', moduleName: 'tests',
@@ -111,3 +113,9 @@ b.task('demo', ['clean', 'lib:cjs'], () => {
     debug: true
   })
 })
+
+b.task('default', ['clean', 'lib', 'demo', 'tests'])
+
+b.setServerPort(4010)
+b.serve({ static: true, route: '/demo', folder: './tmp/demo' })
+b.serve({ static: true, route: '/', folder: '.' })
