@@ -12,13 +12,16 @@ const SCRIPTLET = /@([0-9]+)@/g
 */
 export default class HTMLTemplate {
 
-  constructor(html, components) {
+  constructor(html, components = {}, templates = {}) {
     this.origHtml = html
     this.components = components
+    this.templates = templates
 
     // first preprocess the HTML string
-    // replacing all scriptlets with a HTML safe
-    // string
+    // - trim
+    // - replacing all scriptlets with a HTML safe string
+    // FIXME: it seems that must terminate with a line-break
+    // html = html.trim() + "\n"
     let { text, scriptlets }= replaceScriptlets(html)
     html = text
     this.html = html
@@ -200,11 +203,12 @@ export default class HTMLTemplate {
   }
 
   _expandComponent(vm, props, context, globals, a) {
+    const name = a.name
     // get the component class and render it
     // insert the resulting element into the DOM
     // TODO: if the el had a component attached already,
     // we could just rerender that component
-    let ComponentClass = this.components[a.name]
+    let ComponentClass = this.components[name]
     if (ComponentClass) {
       let compEl = this.document.createElement('div')
       // TODO: now it is getting difficult
@@ -227,18 +231,26 @@ export default class HTMLTemplate {
       comp._render()
       _replaceWith(a.renderedEl, compEl)
       a.renderedEl = compEl
+    } else {
+      console.error('Component not found: ', name)
     }
   }
 
   _expandPartial(vm, props, context, globals, a) {
     let src = a.src
-    // get the corresponding template
-    // TODO: props from attributes
-    let partialProps = {}
-    a.el.attributes.forEach((val, key) => {
-      partialProps[key] = val
-    })
-    let { els } = template.expand(vm, partialProps, context, globals)
+    let template = this.templates[src]
+    if (template) {
+      let partialProps = {}
+      a.el.attributes.forEach((val, key) => {
+        partialProps[key] = val
+      })
+      partialProps.children = a.el.childNodes.map(el => el.clone(true))
+      let { els } = template.expand(vm, partialProps, context, globals)
+      _replaceWith(a.renderedEls, els)
+      a.renderedEls = els
+    } else {
+      console.error('Template not found: ', src)
+    }
   }
 }
 

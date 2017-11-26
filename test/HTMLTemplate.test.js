@@ -76,6 +76,70 @@ test("HTMLTemplate: expanding nested components", (t) => {
   t.end()
 })
 
+test("HTMLTemplate: partial", (t) => {
+  const foo = `
+    <div class={{props.class}}>
+      {{props.children}}
+    </div>
+  `
+  const input = `
+    <Partial src='foo' class='bar'>
+      <p>Hello World</p>
+    </Partial>
+  `
+  let templates = {}
+  let components = {}
+
+  templates['foo'] = new HTMLTemplate(foo, components, templates)
+  templates['bar'] = new HTMLTemplate(input, components, templates)
+
+  let template = templates['bar']
+  let { html } = template.expand(stubVm)
+  let dom = DefaultDOMElement.parseHTML(html)
+  let bar = dom.find('.bar')
+  let p = bar.find('p')
+  t.notNil(bar, 'generated html should have element .bar')
+  t.equal(p.text(), 'Hello World', '.. with a Hello World paragraph')
+  t.end()
+})
+
+test("HTMLTemplate: nested partials", (t) => {
+  const input = `
+    <Partial src='foo'>
+      <p>Hello World</p>
+    </Partial>
+  `
+  const FOO = `
+    <div class='foo'>
+      <Partial src='bar'>
+        {{props.children}}
+      </Partial>
+    </div>
+  `
+  const BAR = `
+    <div class='bar'>
+      {{props.children}}
+    </div>
+  `
+
+  let templates = {}
+  let components = {}
+
+  templates['foo'] = new HTMLTemplate(FOO, components, templates)
+  templates['bar'] = new HTMLTemplate(BAR, components, templates)
+  let template = new HTMLTemplate(input, components, templates)
+
+  let { html } = template.expand(stubVm)
+  let dom = DefaultDOMElement.parseHTML(html)
+  let foo = dom.find('.foo')
+  let bar = foo.find('.bar')
+  let p = bar.find('p')
+  t.notNil(foo, 'generated html should have element .foo')
+  t.notNil(bar, '.. with child element .bar')
+  t.equal(p.text(), 'Hello World', '.... containing a Hello World paragraph')
+  t.end()
+})
+
 class Foo extends Component {
   render($$) {
     return $$('div').addClass('foo')

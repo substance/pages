@@ -5,7 +5,7 @@
 class Script {
 
   constructor(code) {
-    this.code = code
+    this.code = `return (${code})`
   }
 
   runInNewContext(ctx) {
