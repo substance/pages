@@ -4,82 +4,34 @@ const path = require('path')
 const exec = require('substance-bundler/extensions/exec')
 
 b.task('clean', () => {
-  b.rm('build')
+  b.rm('dist')
   b.rm('tmp')
 })
-
-// ATM you we need to checkout the whole project and build a vendor bundle
-b.task('parser', () => {
-  if (!fs.existsSync('./.bin/antlr-4.6-complete.jar')) {
-    if (!fs.existsSync('./.bin')) fs.mkdirSync('./.bin')
-    exec(b, 'curl -o .bin/antlr-4.6-complete.jar http://www.antlr.org/download/antlr-4.6-complete.jar')
-  }
-  b.custom('Generating parser', {
-    src: './lib/html/*.g4',
-    dest: './lib/html/HTMLParser.js',
-    execute: () => {
-      const isWin = /^win/.test(process.platform)
-      let cmd = 'java -jar ./.bin/antlr-4.6-complete.jar -Dlanguage=JavaScript -no-visitor -lib lib/html'
-      if (isWin) cmd += " -o lib/html"
-      exec(b, cmd + ' lib/html/HTMLLexer.g4')
-      exec(b, cmd + ' lib/html/HTMLParser.g4')
-    }
-  })
-})
-.describe('Generate HTMLParser')
 
 b.task('lib:cjs', () => {
   b.js('./src/index.js', {
     targets: [{
-      dest: 'build/substance-pages.cjs.js',
+      dest: 'dist/substance-pages.cjs.js',
       format: 'cjs'
     }],
     external: [
-      'substance', 'esprima', 'escodegen',
-      'antlr4/index', 'html-tag-names'
+      'substance'
     ],
     commonjs: true,
     json: true
   })
 })
 
-/*
-  TODO: we should use this as a case-study for
-  substance-bundler.
-  The challenge is that antlr4, esprima, and escodegen
-  are libraries which are commonjs and easier to bundle
-  with browserify.
-*/
 b.task('lib:browser', () => {
-  b.browserify('./node_modules/escodegen/escodegen.js', {
-    dest: 'tmp/escodegen.js',
-    exports: ['default'],
-    sourceMaps: false
-  })
-  b.browserify('./node_modules/esprima/dist/esprima.js', {
-    dest: 'tmp/esprima.js',
-    exports: ['default'],
-    sourceMaps: false
-  })
-  b.browserify('./src/html/index.js', {
-    dest: 'tmp/htmlparser.js',
-    exports: [ 'parseHTML', 'walk', 'HTMLParserListener']
-  })
   b.js('./src/index.js', {
     targets: [{
-      dest: 'build/substance-pages.js',
+      dest: 'dist/substance-pages.js',
       format: 'umd',
       moduleName: 'substancePages',
       globals: {
         'substance': 'window.substance',
       }
     }],
-    // browserified vendor bundles:
-    alias: {
-      './src/html/index.js': './tmp/htmlparser.js',
-      'escodegen': './tmp/escodegen.js',
-      'esprima': './tmp/esprima.js'
-    },
     external: ['substance'],
     json: true
   })
@@ -88,8 +40,11 @@ b.task('lib:browser', () => {
 b.task('lib', ['lib:cjs', 'lib:browser'])
 
 b.task('tests', ['lib:browser'], () => {
+  b.copy('node_modules/substance-test/dist', 'dist/test/substance-test')
+  b.copy('node_modules/substance/dist', 'dist/test/substance')
+  b.copy('test/index.html', 'dist/test/')
   b.js('test/**/*.test.js', {
-    dest: 'build/tests.js',
+    dest: 'dist/test/tests.js',
     format: 'umd', moduleName: 'tests',
     external: {
       'substance': 'window.substance',
@@ -104,7 +59,7 @@ b.task('demo', ['clean', 'lib:cjs'], () => {
   generate(b, {
     pages: 'demo/*.html',
     partials: 'demo/partials/*',
-    out: 'tmp/demo',
+    out: 'dist/demo',
     rootDir: 'demo',
     assets: [
       'demo/demo.css'
@@ -117,5 +72,4 @@ b.task('demo', ['clean', 'lib:cjs'], () => {
 b.task('default', ['clean', 'lib', 'demo', 'tests'])
 
 b.setServerPort(4010)
-b.serve({ static: true, route: '/demo', folder: './tmp/demo' })
-b.serve({ static: true, route: '/', folder: '.' })
+b.serve({ static: true, route: '/', folder: './dist/' })

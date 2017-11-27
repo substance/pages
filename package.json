@@ -4,23 +4,22 @@
   "description": "Static site generator using Substance.",
   "main": "index.js",
   "scripts": {
+    "prepublish": "node make",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "antlr4": "^4.7.0",
     "browserify": "^14.5.0",
     "substance-bundler": "^0.19.3",
     "substance-test": "^0.9.4"
   },
   "dependencies": {
-    "escodegen": "^1.9.0",
-    "esprima": "^4.0.0",
+    "debug": "^3.1.0",
     "fs-extra": "^4.0.2",
     "glob": "^7.1.2",
     "html-tag-names": "^1.1.2",
     "minimatch": "^3.0.4",
-    "substance": "1.0.0-preview.9"
+    "substance": "1.0.0-preview.11"
   }
 }
