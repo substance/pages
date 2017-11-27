@@ -20,6 +20,6 @@
     "glob": "^7.1.2",
     "html-tag-names": "^1.1.2",
     "minimatch": "^3.0.4",
-    "substance": "1.0.0-preview.11"
+    "substance": "1.0.0-preview.12"
   }
 }
