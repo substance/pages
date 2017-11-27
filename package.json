@@ -7,8 +7,8 @@
     "prepublish": "node make",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Oliver Buchtala",
+  "license": "MIT",
   "devDependencies": {
     "browserify": "^14.5.0",
     "substance-bundler": "^0.19.3",
