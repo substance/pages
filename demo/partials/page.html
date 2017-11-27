@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><% props.title || "Substance Pages - Demo" %></title>
+    <title>{{props.title || "Substance Pages - Demo"}}</title>
     <link href="demo.css" rel='stylesheet' type='text/css' />
   </head>
   <body>
-    <Partial src="partials/header" />
+    <Partial src="partials/header"></Partial>
     <div class="body">
-      <% props.children %>
+      {{props.children}}
     </div>
-    <Partial src="partials/footer" foo="bar" />
+    <Partial src="partials/footer" foo="bar"></Partial>
   </body>
 </html>

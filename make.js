@@ -55,18 +55,18 @@ b.task('tests', ['lib:browser'], () => {
 })
 
 b.task('demo', ['clean', 'lib:cjs'], () => {
-  // const generate = require('./lib/generate')
-  // generate(b, {
-  //   pages: 'demo/*.html',
-  //   partials: 'demo/partials/*',
-  //   out: 'dist/demo',
-  //   rootDir: 'demo',
-  //   assets: [
-  //     'demo/demo.css'
-  //   ],
-  //   labels: 'demo/labels/en.json',
-  //   debug: true
-  // })
+  const generate = require('./lib/generate')
+  generate(b, {
+    pages: 'demo/*.html',
+    partials: 'demo/partials/*',
+    out: 'dist/demo',
+    rootDir: 'demo',
+    assets: [
+      'demo/demo.css'
+    ],
+    labels: 'demo/labels/en.json',
+    debug: true
+  })
 })
 
 b.task('default', ['clean', 'lib', 'demo', 'tests'])

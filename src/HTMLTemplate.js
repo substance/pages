@@ -94,22 +94,23 @@ export default class HTMLTemplate {
         let pos = 0
         let m
         while ( (m = SCRIPTLET.exec(text)) ) {
-          if (m.index > pos) {
-            let scriptletId = m[1]
-            let code = this.scriptlets[scriptletId]
-            let placeHolder = doc.createComment(code)
-            frags.push(doc.createTextNode(text.substring(pos, m.index)))
-            frags.push(placeHolder)
-            actions.push({
-              type: 'fragment',
-              level: _getLevel(el),
-              // we will maintain the elements here
-              // which will be replaced by the next expand
-              els: [placeHolder],
-              code
-            })
+          let start = m.index
+          let scriptletId = m[1]
+          let code = this.scriptlets[scriptletId]
+          let placeHolder = doc.createComment(code)
+          if (start > pos) {
+            frags.push(doc.createTextNode(text.substring(pos, start)))
           }
-          pos = m.index + m[0].length
+          frags.push(placeHolder)
+          actions.push({
+            type: 'fragment',
+            level: _getLevel(el),
+            // we will maintain the elements here
+            // which will be replaced by the next expand
+            els: [placeHolder],
+            code
+          })
+          pos = start + m[0].length
         }
         if (pos < text.length) {
           frags.push(doc.createTextNode(text.substring(pos)))
@@ -162,16 +163,22 @@ export default class HTMLTemplate {
           throw new Error('Unknown action type.')
       }
     })
-    let html = this.els.map(el => el.serialize()).join('\n')
+    let html = this.els.map(el => el.serialize()).join('')
     let els = this.els.map(el => el.clone(true))
     return { html, els }
+  }
+
+  _getScriptContext(context, props, globals) {
+    const document = this.document
+    const $$ = document.createElement.bind(document)
+    return Object.assign({}, globals, { context, props, document, $$})
   }
 
   _expandAttribute(vm, props, context, globals, a) {
     // executing the code in a sandbox
     // and taking the result as string
     let script = new vm.Script(a.code)
-    let scriptContext = Object.assign({}, globals, { context, props })
+    let scriptContext = this._getScriptContext(context, props, globals)
     let result = script.runInNewContext(scriptContext)
     a.el.attr(a.name, String(result))
   }
@@ -181,7 +188,7 @@ export default class HTMLTemplate {
     // and replacing the old elements in the DOM
     // with the result of the executed code
     let script = new vm.Script(a.code)
-    let scriptContext = Object.assign({}, globals, { context, props })
+    let scriptContext = this._getScriptContext(context, props, globals)
     let result = script.runInNewContext(scriptContext)
     if (!isArray(result)) {
       result = [result]

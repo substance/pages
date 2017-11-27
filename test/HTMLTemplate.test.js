@@ -56,6 +56,19 @@ test("HTMLTemplate: expanding a template", (t) => {
   t.end()
 })
 
+test("HTMLTemplate: scriptlet in same line", (t) => {
+  const input = `
+    <div>{{props.title}}</div>
+  `
+  let template = new HTMLTemplate(input)
+  let { html } = template.expand(stubVm, { title: 'foo' })
+  let dom = DefaultDOMElement.parseHTML(html)
+  let div = dom.find('div')
+  t.notNil(div, 'generated html should have a <div> element')
+  t.equal(div.text(), 'foo', '.. with correct content')
+  t.end()
+})
+
 test("HTMLTemplate: expanding nested components", (t) => {
   const input = `
     <Foo>
