@@ -153,6 +153,30 @@ test("HTMLTemplate: nested partials", (t) => {
   t.end()
 })
 
+test("HTMLTemplate: self-closing partial", (t) => {
+  const input = `
+    <Partial src='foo' />
+    <p>Hello World</p>
+  `
+  const FOO = `
+    <div class='foo'>YAY</div>
+  `
+  let templates = {}
+  let components = {}
+
+  templates['foo'] = new HTMLTemplate(FOO, components, templates)
+  let template = new HTMLTemplate(input, components, templates)
+
+  let { html } = template.expand(stubVm)
+  let dom = DefaultDOMElement.parseHTML(html)
+  let foo = dom.find('.foo')
+  let p = dom.find('p')
+  t.notNil(foo, 'generated html should have element .foo')
+  t.equal(p.text(), 'Hello World', '.. and a Hello World paragraph')
+  t.end()
+})
+
+
 class Foo extends Component {
   render($$) {
     return $$('div').addClass('foo')

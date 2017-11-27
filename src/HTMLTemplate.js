@@ -29,12 +29,12 @@ export default class HTMLTemplate {
 
     // then we parse the preprocessed html and
     // store the els which serve as the template DOM
-    let els = MemoryDOMElement.parseMarkup(html, 'html', { snippet: true })
-    if (!isArray(els)) {
-      els = [els]
-    }
-    this.els = els
-    this.document = els[0].getOwnerDocument()
+    let doc = MemoryDOMElement.parseMarkup(html, 'html', {
+      raw: true,
+      recognizeSelfClosing: true
+    })
+    this.els = doc.childNodes
+    this.document = doc
 
     // analyze the template and record actions
     this.actions = []
