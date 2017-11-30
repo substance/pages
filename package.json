@@ -11,7 +11,7 @@
   "license": "MIT",
   "devDependencies": {
     "browserify": "^14.5.0",
-    "substance-bundler": "^0.19.3",
+    "substance-bundler": "^0.20.0",
     "substance-test": "^0.9.4"
   },
   "dependencies": {
