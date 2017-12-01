@@ -13,7 +13,7 @@ module.exports = {
     // browser / nodejs
     "console", "setTimeout", "setInterval", "clearInterval",
     // nodejs
-    "global",
+    "global", "__dirname",
     // EcmaScript 6
     "Promise", "Map", "Set", "WeakMap",
     // commonjs
