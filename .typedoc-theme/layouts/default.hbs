@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html class="default">
+<body>
+  <link rel="stylesheet" href="{{relativeURL "assets/css/typedoc.css"}}">
+  <div class="tsd-page-title">
+    <div class="container">
+      <h1>{{#compact}}
+        {{model.kindString}}&nbsp;
+        {{model.name}}
+        {{#if model.typeParameters}}
+          &lt;
+          {{#each model.typeParameters}}
+            {{#if @index}},&nbsp;{{/if}}
+            {{name}}
+          {{/each}}
+          &gt;
+        {{/if}}
+      {{/compact}}</h1>
+    </div>
+    <div id="tsd-search">
+      <div class="field">
+        <input id="tsd-search-field" type="text" />
+      </div>
+      <ul class="results"></ul>
+    </div>
+  </div>
+  <div class="container container-main">
+    <div class="row">
+      <div class="col-8 col-content">
+        {{{contents}}}
+      </div>
+      <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+        <nav class="tsd-navigation primary">
+          <ul>
+            {{#each navigation.children}}
+              {{> navigation}}
+            {{/each}}
+          </ul>
+        </nav>
+        <nav class="tsd-navigation secondary menu-sticky">
+          <ul class="before-current">
+            {{#each toc.children}}
+              {{> toc.root}}
+            {{/each}}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="{{relativeURL "assets/js/main.js"}}"></script>
+  <script type="text/javascript" src="{{relativeURL "assets/js/search.js"}}"></script>
+  </div>
+</body>
+</html>
