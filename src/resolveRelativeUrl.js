@@ -5,6 +5,8 @@ export default function resolveRelativeUrl(pathModule, rootDir, from, to) {
   if (!rootDir) {
     throw new Error('Internal Error')
   }
+  // console.log('resolving url to "%s" from "%s"', to, from)
+
   // the target resource is given as absolute
   // path, i.e. we will interpret it relative to
   // the rootDir
@@ -24,8 +26,9 @@ export default function resolveRelativeUrl(pathModule, rootDir, from, to) {
   if (last === SLASH) {
     p = path.join(p, 'index.html')
   }
-
-  p = path.relative(rootDir, p).replace(/\\/g, '/')
-
+  from = path.dirname(from) + '/'
+  // console.log('?? ', from, p)
+  p = path.relative(from, p).replace(/\\/g, '/')
+  // console.log('.. =>', p)
   return p
 }

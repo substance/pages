@@ -6,12 +6,14 @@ import createPageContext from './createPageContext'
 export default class SiteGenerator {
 
   constructor(config = {}) {
-    this.config = config
+    const rootDir = config.rootDir
+    if (!rootDir) {
+      throw new Error("'rootDir' is mandatory: provide an absolute path to the root of the generated site.")
+    }
 
     const components = config.components || {}
     const globals = config.globals || {}
     const labels = config.labels || {}
-    const rootDir = config.rootDir || process.cwd()
 
     // low-level modules: 'path', 'fs', 'vm'
     // we do that so we could drop in another
@@ -35,10 +37,11 @@ export default class SiteGenerator {
       modules
     })
 
+    this.config = config
+    this.rootDir = rootDir
     this.components = components
     this.globals = globals
     this.labels = labels
-    this.rootDir = rootDir
     this.modules = modules
     this.siteContext = siteContext
     this.partials = {}
@@ -72,7 +75,7 @@ export default class SiteGenerator {
     const fs = opts.fs || this.modules.fs
     let ext = path.extname(src)
     let relPath = path.relative(this.rootDir, dest)
-    let pageUrl = relPath.slice(0,-ext.length)
+    let pageUrl = relPath.replace(/\\/g, '/')
     if (ext !== '.html') {
       throw new Error('Only .html is supported as partial format.')
     }

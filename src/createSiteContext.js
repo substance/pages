@@ -13,9 +13,11 @@ export default function({rootDir, siteProps, labels, modules}) {
       if (!from || !to) {
         throw new Error('site.getRelativeUrl(from, to): argument was null.')
       }
+      from = path.join(rootDir, from)
       return resolveRelativeUrl(path, rootDir, from, to)
     }
   })
   Object.assign(siteContext, siteProps)
+  // console.log(siteContext)
   return siteContext
 }
