@@ -1,17 +1,25 @@
 import { test } from 'substance-test'
 import { Component, DefaultDOMElement } from 'substance'
-import { replaceScriptlets, HTMLTemplate } from 'substance-pages'
+import { HTMLTemplate } from 'substance-pages'
 import * as stubVm from './stub-vm'
 
-test("replaceScriptlets: content scriptlet", (t) => {
-  const html = "<div foo={{props.foo}}>{{props.children}}</div>"
-  let { text, scriptlets } = replaceScriptlets(html)
-  t.equal(scriptlets.length, 2, "there should be two scriptlets")
-  t.equal(text, "<div foo=@0@>@1@</div>", "scriptlets should have been replace correctly")
-  t.equal(scriptlets[0], 'props.foo', "first scriptlet should be extracted correctly")
-  t.equal(scriptlets[1], 'props.children', "second scriptlet should be extracted correctly")
-  t.end()
-})
+class Foo extends Component {
+  render($$) {
+    return $$('div').addClass('foo')
+      .attr('foo', this.props.foo)
+      .append(
+        $$('div').addClass('baz')
+          .append(this.props.children)
+      )
+  }
+}
+
+class Bar extends Component {
+  render($$) {
+    return $$('div').addClass('bar')
+      .append(this.props.children)
+  }
+}
 
 test("HTMLTemplate: deriving actions", (t) => {
   const html = `
@@ -20,16 +28,18 @@ test("HTMLTemplate: deriving actions", (t) => {
     </Foo>
   `
   let template = new HTMLTemplate(html, {
-    // ATTENTION: tagNames get lower cased in HTML
-    // so we need to register components correctly
-    'foo': null
+    components: {
+      // ATTENTION: tagNames get lower cased in HTML
+      // so we need to register components correctly
+      'foo': null
+    }
   })
   let actions = template.actions
   t.equal(actions.length, 3, "there should be three actions")
   t.deepEqual(actions.map(a => a.type), ['fragment', 'attribute', 'component'], "the actions should be correctly identified")
-  t.equal(actions[0].code, 'props.children', "first action should have correct code")
+  t.equal(actions[0].script.code, 'props.children', "first action should have correct code")
   t.equal(actions[1].name, 'src', "second action should be bound to 'src' attribute")
-  t.equal(actions[1].code, 'props.src', ".. and should have correct code")
+  t.equal(actions[1].script.code, 'props.src', ".. and should have correct code")
   t.equal(actions[2].name, 'foo', "third should have correct component name")
   t.end()
 })
@@ -41,7 +51,9 @@ test("HTMLTemplate: expanding a template", (t) => {
     </Foo>
   `
   let template = new HTMLTemplate(input, {
-    'foo': Foo
+    components: {
+      'foo': Foo
+    }
   })
   let { html } = template.expand(stubVm, { src: 'foo' })
   let dom = DefaultDOMElement.parseHTML(html)
@@ -76,8 +88,10 @@ test("HTMLTemplate: expanding nested components", (t) => {
     </Foo>
   `
   let template = new HTMLTemplate(input, {
-    'foo': Foo,
-    'bar': Bar
+    components: {
+      'foo': Foo,
+      'bar': Bar
+    }
   })
   let { html } = template.expand(stubVm)
   let dom = DefaultDOMElement.parseHTML(html)
@@ -103,8 +117,14 @@ test("HTMLTemplate: partial", (t) => {
   let templates = {}
   let components = {}
 
-  templates['foo'] = new HTMLTemplate(foo, components, templates)
-  templates['bar'] = new HTMLTemplate(input, components, templates)
+  templates['foo'] = new HTMLTemplate(foo, {
+    components,
+    templates
+  })
+  templates['bar'] = new HTMLTemplate(input, {
+    components,
+    templates
+  })
 
   let template = templates['bar']
   let { html } = template.expand(stubVm)
@@ -138,9 +158,9 @@ test("HTMLTemplate: nested partials", (t) => {
   let templates = {}
   let components = {}
 
-  templates['foo'] = new HTMLTemplate(FOO, components, templates)
-  templates['bar'] = new HTMLTemplate(BAR, components, templates)
-  let template = new HTMLTemplate(input, components, templates)
+  templates['foo'] = new HTMLTemplate(FOO, { components, templates })
+  templates['bar'] = new HTMLTemplate(BAR, { components, templates })
+  let template = new HTMLTemplate(input, { components, templates })
 
   let { html } = template.expand(stubVm)
   let dom = DefaultDOMElement.parseHTML(html)
@@ -164,8 +184,8 @@ test("HTMLTemplate: self-closing partial", (t) => {
   let templates = {}
   let components = {}
 
-  templates['foo'] = new HTMLTemplate(FOO, components, templates)
-  let template = new HTMLTemplate(input, components, templates)
+  templates['foo'] = new HTMLTemplate(FOO, { components, templates })
+  let template = new HTMLTemplate(input, { components, templates })
 
   let { html } = template.expand(stubVm)
   let dom = DefaultDOMElement.parseHTML(html)
@@ -176,21 +196,25 @@ test("HTMLTemplate: self-closing partial", (t) => {
   t.end()
 })
 
+test("HTMLTemplate: undefined result", (t) => {
+  const input = "<div>{{props.foo}}</div>"
+  let template = new HTMLTemplate(input)
+  let { els } = template.expand(stubVm)
+  let div = els[0]
+  t.equal(div.text().trim(), '', 'element should be empty')
+  t.end()
+})
 
-class Foo extends Component {
-  render($$) {
-    return $$('div').addClass('foo')
-      .attr('foo', this.props.foo)
-      .append(
-        $$('div').addClass('baz')
-          .append(this.props.children)
-      )
-  }
-}
+test("HTMLTemplate: passing undefined property into partial", (t) => {
+  const input = "<Partial src='foo' title={{props.title}} />"
+  const FOO = "<div>{{props.title}}</div>"
 
-class Bar extends Component {
-  render($$) {
-    return $$('div').addClass('bar')
-      .append(this.props.children)
-  }
-}
+  let templates = {}
+  templates['foo'] = new HTMLTemplate(FOO, { templates })
+  let template = new HTMLTemplate(input, { templates })
+
+  let { els } = template.expand(stubVm)
+  let div = els[0]
+  t.equal(div.text().trim(), '', 'element should be empty')
+  t.end()
+})

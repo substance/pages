@@ -30,7 +30,11 @@ export default function replaceScriptlets(text) {
           pos = L
         } else {
           frags.push(`@${scriptlets.length}@`)
-          scriptlets.push(text.substring(pos, idx))
+          scriptlets.push({
+            code: text.substring(pos, idx),
+            start: pos,
+            end: idx
+          })
           pos = idx + SCRIPTLET_CLOSE.length
           state = 0
         }
@@ -45,5 +49,42 @@ export default function replaceScriptlets(text) {
     console.error('Found unclosed scriplet.', tail)
     frags.push(tail)
   }
+  // add line and column information for mapping errors
+  _addLineAndColumns(text, scriptlets)
+
   return { text: frags.join(''), scriptlets }
+}
+
+function _addLineAndColumns(text, scriptlets) {
+  let newLines = /\r?\n|\r/g
+  let m
+  // Note: adding this will produce 1-based line numbers
+  let lineBreaks = [0]
+  while( (m = newLines.exec(text)) ) {
+    lineBreaks.push(m.index+m[0].length)
+  }
+  // EOF
+  lineBreaks.push(Number.MAX_VALUE)
+  // NOTE: we are exploiting the fact that
+  // scriptlets are disjoint and sorted
+  let currentLine = 0
+  function _seek(pos) {
+    while (pos >= lineBreaks[currentLine]) {
+      currentLine++
+    }
+  }
+  // ATTENTION lines and columns shall be zero based
+  scriptlets.forEach((s) => {
+    let line
+    // start location
+    _seek(s.start)
+    line = currentLine-1
+    s.startLine = line
+    s.startColumn = s.start-lineBreaks[line]
+    // end location
+    _seek(s.end)
+    line = currentLine-1
+    s.endLine = line
+    s.endColumn = s.end-lineBreaks[line]
+  })
 }

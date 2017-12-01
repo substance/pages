@@ -12,10 +12,11 @@ const SCRIPTLET = /@([0-9]+)@/g
 */
 export default class HTMLTemplate {
 
-  constructor(html, components = {}, templates = {}) {
+  constructor(html, opts = {}) {
     this.origHtml = html
-    this.components = components
-    this.templates = templates
+    this.components = opts.components || {}
+    this.templates = opts.templates || {}
+    this.filename = opts.filename || '<template>'
 
     // first preprocess the HTML string
     // - trim
@@ -29,6 +30,8 @@ export default class HTMLTemplate {
 
     // then we parse the preprocessed html and
     // store the els which serve as the template DOM
+    // TODO: can we generalize this, i.e. so it could work
+    // with BrowserDOMElement too?
     let doc = MemoryDOMElement.parseMarkup(html, 'html', {
       raw: true,
       recognizeSelfClosing: true
@@ -43,7 +46,6 @@ export default class HTMLTemplate {
     this._initialize()
   }
 
-
   /*
     walk through the DOM
     - insert elements for structural scriptlets
@@ -54,6 +56,8 @@ export default class HTMLTemplate {
   _initialize() {
     let actions = []
 
+    // TODO: can we generalize this, i.e. so it could work
+    // with BrowserDOMElement too?
     let analyzeElement = (el) => {
       if (el.type === 'tag') {
         const tagName = el.tagName
@@ -78,12 +82,13 @@ export default class HTMLTemplate {
           let m = SCRIPTLET.exec(val)
           if (m) {
             let scriptletId = m[1]
+            let script = this.scriptlets[scriptletId]
             actions.push({
               type: 'attribute',
               level: _getLevel(el),
               el,
               name,
-              code: this.scriptlets[scriptletId]
+              script
             })
           }
         })
@@ -96,8 +101,8 @@ export default class HTMLTemplate {
         while ( (m = SCRIPTLET.exec(text)) ) {
           let start = m.index
           let scriptletId = m[1]
-          let code = this.scriptlets[scriptletId]
-          let placeHolder = doc.createComment(code)
+          let script = this.scriptlets[scriptletId]
+          let placeHolder = doc.createComment(script.code)
           if (start > pos) {
             frags.push(doc.createTextNode(text.substring(pos, start)))
           }
@@ -108,7 +113,7 @@ export default class HTMLTemplate {
             // we will maintain the elements here
             // which will be replaced by the next expand
             els: [placeHolder],
-            code
+            script
           })
           pos = start + m[0].length
         }
@@ -177,33 +182,47 @@ export default class HTMLTemplate {
   _expandAttribute(vm, props, context, globals, a) {
     // executing the code in a sandbox
     // and taking the result as string
-    let script = new vm.Script(a.code)
+    let script = a.script
+    script = new vm.Script(script.code, {
+      filename: this.filename,
+      lineOffset: script.startLine,
+      columnOffset: script.startColumn,
+    })
     let scriptContext = this._getScriptContext(context, props, globals)
     let result = script.runInNewContext(scriptContext)
-    a.el.attr(a.name, String(result))
+    let val = result ? String(result) : ''
+    a.el.attr(a.name, val)
   }
 
   _expandFragment(vm, props, context, globals, a) {
     // executing the code in a sandbox
     // and replacing the old elements in the DOM
     // with the result of the executed code
-    let script = new vm.Script(a.code)
+    let script = a.script
+    script = new vm.Script(script.code, {
+      filename: this.filename,
+      lineOffset: script.startLine,
+      columnOffset: script.startColumn,
+    })
     let scriptContext = this._getScriptContext(context, props, globals)
     let result = script.runInNewContext(scriptContext)
-    if (!isArray(result)) {
-      result = [result]
-    }
-    let els = result.map((el) => {
-      if (!el) return el
-      if (!el._isDOMElement) {
-        return this.document.createTextNode(String(el))
+    let els = []
+    if (result) {
+      if (!isArray(result)) {
+        result = [result]
       }
-      return el
-    }).filter(Boolean)
+      els = result.map((el) => {
+        if (!el) return el
+        if (!el._isDOMElement) {
+          return this.document.createTextNode(String(el))
+        }
+        return el
+      }).filter(Boolean)
+    }
     // if there is nothing coming back from the script
     // insert a comment element
     if (els.length === 0) {
-      els.push(this.document.createComment(a.code))
+      els.push(this.document.createComment(a.script.code))
     }
     _replaceWith(a.els, els)
     a.els = els
@@ -218,16 +237,16 @@ export default class HTMLTemplate {
     let ComponentClass = this.components[name]
     if (ComponentClass) {
       let compEl = this.document.createElement('div')
-      // TODO: now it is getting difficult
+      // Now it is getting difficult:
       // ATM we can't just pass in DOMElements as children
       // as Component.render() uses Virtual elements
       // we need to take the children from the template DOM
       // and turn them into VirtualElements, and then just
       let compProps = {}
-      a.el.attributes.forEach((val, key) => {
+      a.el.getAttributes().forEach((val, key) => {
         compProps[key] = val
       })
-      compProps.children = a.el.childNodes.map(_mapToVirtualElement)
+      compProps.children = a.el.getChildNodes().map(_mapToVirtualElement)
       let comp = new ComponentClass(null, compProps, {
         context,
         el: compEl,
@@ -248,10 +267,10 @@ export default class HTMLTemplate {
     let template = this.templates[src]
     if (template) {
       let partialProps = {}
-      a.el.attributes.forEach((val, key) => {
+      a.el.getAttributes().forEach((val, key) => {
         partialProps[key] = val
       })
-      partialProps.children = a.el.childNodes.map(el => el.clone(true))
+      partialProps.children = a.el.getChildNodes().map(el => el.clone(true))
       let { els } = template.expand(vm, partialProps, context, globals)
       _replaceWith(a.renderedEls, els)
       a.renderedEls = els
@@ -263,10 +282,10 @@ export default class HTMLTemplate {
 
 function _getLevel(el) {
   if (!el) return 0
-  if (!el.hasOwnProperty('level')) {
-    el.level = _getLevel(el.parentNode) + 1
+  if (!el.hasOwnProperty('_level')) {
+    el._level = _getLevel(el.parentNode) + 1
   }
-  return el.level
+  return el._level
 }
 
 function _walk(el, cb) {
@@ -297,6 +316,8 @@ function _replaceWith(oldEls, els) {
 }
 
 function _mapToVirtualElement(el) {
+  // TODO: can we generalize this, i.e. so it could work
+  // with BrowserDOMElement too?
   if (el.type === 'tag') {
     let vel = VirtualElement.createElement(el.tagName)
     vel.attr(el.getAttributes())
