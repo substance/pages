@@ -145,6 +145,7 @@ export default class HTMLTemplate {
   }
 
   expand(vm, props = {}, context = {}, globals = {}) {
+    this.deps = {}
     // TODO: run actions, i.e.update DOM before serialization
     this.actions.forEach((a) => {
       switch (a.type) {
@@ -171,6 +172,25 @@ export default class HTMLTemplate {
     let html = this.els.map(el => el.serialize()).join('')
     let els = this.els.map(el => el.clone(true))
     return { html, els }
+  }
+
+  getDependencies() {
+    // walk through all deps and collect filenames
+    // that influence this template directly or indirectly
+    let deps = new Set([this.filename])
+    // get all templates this one depends on
+    let ts = this.actions.map((a) => {
+      return this.templates[a.src]
+    }).filter(Boolean)
+    // collect dependencies recursively
+    ts.forEach((t) => {
+      // guard to detect cyclics
+      if (t._visiting) throw new Error('Cyclic dependency detected!')
+      t._visiting = true
+      t.getDependencies().forEach(f => deps.add(f))
+      t._visiting = false
+    })
+    return deps
   }
 
   _getScriptContext(context, props, globals) {
@@ -250,7 +270,7 @@ export default class HTMLTemplate {
       let comp = new ComponentClass(null, compProps, {
         context,
         el: compEl,
-        renderingEngine: new RenderingEngine({
+        renderingEngine: Component.createRenderingEngine({
           elementFactory: this.document
         })
       })

@@ -56,7 +56,7 @@ export default class SiteGenerator {
       throw new Error('Only .html is supported as partial format.')
     }
     let content = fs.readFileSync(file, 'utf8')
-    let partial = new HTMLTemplate(content, {
+    let template = new HTMLTemplate(content, {
       components: this.components,
       templates: this.partials,
       filename: file
@@ -66,7 +66,7 @@ export default class SiteGenerator {
     // the full file path, and considering
     // the context from where a partial is used
     // For now, we keep it simple
-    this.partials[name] = partial
+    this.partials[name] = template
   }
 
   createPage(src, dest, opts = {}) {
@@ -96,6 +96,9 @@ export default class SiteGenerator {
     globals.site = this.siteContext
     let { html } = template.expand(vm, {}, pageContext, globals)
     fs.writeFileSync(dest, html)
+
+    return { template, html }
   }
+
 }
 
