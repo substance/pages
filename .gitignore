@@ -1,13 +1,3 @@
-logs
-*.log
-node_modules
-.lock-wscript
 dist
-dist/doc
+node_modules
 tmp
-.npm
-.test
-.doc
-.docs
-.bin
-build
