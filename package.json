@@ -2,9 +2,14 @@
   "name": "substance-pages",
   "version": "0.2.0",
   "description": "Static site generator using Substance.",
-  "main": "index.js",
+  "main": "dist/pages.cjs.js",
+  "browser": "dist/pages.js",
+  "esnext": "index.es.js",
+  "module": "dist/page.es.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepack": "npm run build",
+    "lint": "standard src/**/*.js",
+    "build": "node make"
   },
   "author": {
     "name": "Substance",
@@ -12,7 +17,18 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "rollup": "^1.20.1",
+    "standard": "^14.0.0",
+    "substance-bundler": "^0.26.5",
+    "webpack": "^4.39.2"
   },
-  "dependencies": {
-  }
+  "dependencies": {},
+  "peerDependencies": {
+    "substance": "^1.1.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "package.json"
+  ]
 }
