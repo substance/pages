@@ -9,7 +9,7 @@ export default class Page extends Component {
   }
 
   renderPageHead ($$) {
-    let headEl = $$('head')
+    const headEl = $$('head')
     // title
     headEl.append(
       $$('title').text(this.getTitle())
@@ -27,18 +27,20 @@ export default class Page extends Component {
       this.renderScripts($$)
     )
     // boot script
-    headEl.append(
-      $$('script').attr('src', this.getBootscript())
-    )
+    if (this.props.bootscriptUrl) {
+      headEl.append(
+        $$('script').attr('src', this.props.bootscriptUrl)
+      )
+    } else if (this.props.bootscript) {
+      headEl.append(
+        $$('script').text(this.props.bootscript)
+      )
+    }
     return headEl
   }
 
   getTitle ($$) {
     return this.props.title
-  }
-
-  getBootscript () {
-    return this.props.bootscript
   }
 
   renderMetadata ($$) {

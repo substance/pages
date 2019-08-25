@@ -2,10 +2,11 @@
   "name": "substance-pages",
   "version": "0.2.0",
   "description": "Static site generator using Substance.",
+  "esnext": "src/lib/index.js",
   "main": "dist/pages.cjs.js",
   "browser": "dist/pages.js",
-  "esnext": "index.es.js",
   "module": "dist/page.es.js",
+  "sideEffects": false,
   "scripts": {
     "prepack": "npm run build",
     "lint": "standard src/**/*.js",
@@ -19,7 +20,8 @@
   "devDependencies": {
     "rollup": "^1.20.1",
     "standard": "^14.0.0",
-    "substance-bundler": "^0.26.5",
+    "substance": "^1.1.0",
+    "substance-bundler": "^0.27.1",
     "webpack": "^4.39.2"
   },
   "dependencies": {},
@@ -29,6 +31,7 @@
   "files": [
     "dist",
     "src",
+    "index.es.js",
     "package.json"
   ]
 }

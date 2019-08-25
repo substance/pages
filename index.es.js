@@ -1,1 +1,2 @@
-export { default as Page } from './src/Page'
+export * from './src/lib/index'
+export * from './src/cli/index'
