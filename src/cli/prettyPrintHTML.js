@@ -17,6 +17,28 @@ export default function prettyPrintHTML (html) {
   return result.join('\n')
 }
 
+const singleTag = {
+  area: true,
+  base: true,
+  basefont: true,
+  br: true,
+  col: true,
+  command: true,
+  embed: true,
+  frame: true,
+  hr: true,
+  img: true,
+  input: true,
+  isindex: true,
+  keygen: true,
+  link: true,
+  meta: true,
+  param: true,
+  source: true,
+  track: true,
+  wbr: true
+}
+
 function _prettyPrint (result, el, level) {
   const indent = new Array(level * 2).fill(' ').join('')
   if (el.isElementNode()) {
@@ -30,14 +52,19 @@ function _prettyPrint (result, el, level) {
       el.getAttributes().forEach((val, name) => {
         tagStr.push(`${name}="${val}"`)
       })
-      if (children.length > 0) {
+
+      if (children.length === 0) {
+        if (singleTag[el.tagName]) {
+          result.push(indent + tagStr.join(' ') + ' />')
+        } else {
+          result.push(indent + tagStr.join(' ') + `></${tagName}>`)
+        }
+      } else {
         result.push(indent + tagStr.join(' ') + '>')
         el.children.forEach((child) => {
           _prettyPrint(result, child, level + 1)
         })
         result.push(indent + `</${tagName}>`)
-      } else {
-        result.push(indent + tagStr.join(' ') + ' />')
       }
     }
   } else if (level === 0 && el.isTextNode()) {
