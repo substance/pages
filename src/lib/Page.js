@@ -26,6 +26,13 @@ export default class Page extends Component {
     headEl.append(
       this.renderScripts($$)
     )
+    if (this.props.chunks) {
+      headEl.append(
+        this.props.chunks.map(chunk => {
+          return $$('script').attr('src', chunk)
+        })
+      )
+    }
     // boot script
     if (this.props.bootscriptUrl) {
       headEl.append(
