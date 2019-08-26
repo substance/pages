@@ -2,11 +2,13 @@ const path = require('path')
 
 /**
  * Creates a webpack configuration
- * @param {object} pages
+ * @param {object} views
  */
-export default function _createWebpackConfig (pages, options = {}) {
+export default function _createWebpackConfig (views, options = {}) {
   const mode = options.mode || 'production'
   const outputDir = options.outputDir || 'dist'
+  const publicDir = path.join(outputDir, 'public')
+  const viewsDir = path.join(outputDir, 'views')
   const cwd = process.cwd()
 
   const jsxSupport = {
@@ -30,9 +32,9 @@ export default function _createWebpackConfig (pages, options = {}) {
     ]
   }
   const devConfig = {
-    entry: pages,
+    entry: views,
     output: {
-      path: path.join(cwd, outputDir, 'js'),
+      path: path.join(cwd, publicDir, 'js'),
       filename: '[name].page.js',
       library: '[name]Page',
       libraryTarget: 'window'
@@ -101,17 +103,20 @@ export default function _createWebpackConfig (pages, options = {}) {
 
   // this is used internally only by the site generator
   const nodeConfig = {
-    entry: pages,
+    entry: views,
     output: {
-      path: path.join(cwd, 'tmp'),
-      filename: '[name].page.cjs.js',
+      path: path.join(cwd, viewsDir),
+      filename: '[name].page.js',
       library: '[name]Page',
       libraryTarget: 'commonjs',
       libraryExport: 'default'
     },
     mode: 'development',
     module: jsxSupport,
-    externals: ['substance', 'substance-pages']
+    resolve: {
+      extensions: ['.js', '.jsx'],
+      mainFields: ['esnext', 'module', 'main']
+    }
   }
 
   return [browserConfig, nodeConfig]

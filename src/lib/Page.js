@@ -12,7 +12,7 @@ export default class Page extends Component {
     const headEl = $$('head')
     // title
     headEl.append(
-      $$('title').text(this.getTitle())
+      this.renderTitle($$)
     )
     // metadata
     headEl.append(
@@ -46,8 +46,8 @@ export default class Page extends Component {
     return headEl
   }
 
-  getTitle ($$) {
-    return this.props.title
+  renderTitle ($$) {
+    return $$('title').text(this.props.title)
   }
 
   renderMetadata ($$) {
