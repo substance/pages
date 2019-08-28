@@ -1,4 +1,5 @@
 import generatePage from './generatePage'
+import requireUncached from './_requireUncached'
 
 export default function createEngine (engineOptions = {}) {
   function renderFile (filename, options, cb) {
@@ -8,18 +9,18 @@ export default function createEngine (engineOptions = {}) {
     // console.log('renderFile', filename, options)
     const pageName = path.basename(filename, '.page.js')
     const viewsDir = settings.views
+    const configFile = path.join(viewsDir, 'config.json')
     const chunksFile = path.join(viewsDir, 'chunks', `${pageName}.chunks.json`)
     let html
     try {
-      const chunks = require(chunksFile)
-      const PageClass = require(filename)[`${pageName}Page`]
-      html = generatePage(PageClass, Object.assign({}, props, { chunks, pageName }))
+      const config = requireUncached(configFile)[pageName]
+      const chunks = requireUncached(chunksFile)
+      const PageClass = requireUncached(filename)[`${pageName}Page`]
+      const pageProps = Object.assign({}, props, { chunks, pageName, config })
+      html = generatePage(PageClass, pageProps)
       cb(null, html)
     } catch (err) {
       cb(err)
-    } finally {
-      delete require.cache[chunksFile]
-      delete require.cache[filename]
     }
   }
   return renderFile

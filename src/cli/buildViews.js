@@ -1,4 +1,5 @@
 import _createWebpackConfig from './_createWebpackConfig'
+import omit from './_omit'
 
 export default function buildSite (b, options = {}) {
   const path = require('path')
@@ -10,6 +11,17 @@ export default function buildSite (b, options = {}) {
   const publicDir = path.join(outputDir, 'public')
 
   const viewsConfig = require(configFile)
+
+  // write a view config derived from the user's views.config.js
+  b.custom('Write views config', {
+    execute () {
+      const _config = {}
+      Object.keys(viewsConfig).forEach(name => {
+        _config[name] = omit(viewsConfig[name], 'entry')
+      })
+      b.writeFileSync(path.join(outputDir, 'views', 'config.json'), JSON.stringify(_config, 0, 2))
+    }
+  })
 
   // create JS bundles for all pages
   webpack(b, _createWebpackConfig(viewsConfig, options))
