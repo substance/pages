@@ -10,6 +10,7 @@ export default class Page extends Component {
   }
 
   renderPageHead ($$) {
+    const config = this.props.config || {}
     const headEl = $$('head')
     // title
     headEl.append(
@@ -27,24 +28,26 @@ export default class Page extends Component {
     headEl.append(
       this.renderScripts($$)
     )
-    if (this.props.chunks) {
+    if (!config.static) {
+      // store the props
       headEl.append(
-        this.props.chunks.map(chunk => {
-          return $$('script').attr('src', chunk)
-        })
+        $$('script').attr({
+          id: 'substance-page-props',
+          type: 'application/json'
+        }).text(JSON.stringify(this.props))
+      )
+      if (this.props.chunks) {
+        headEl.append(
+          this.props.chunks.map(chunk => {
+            return $$('script').attr('src', chunk)
+          })
+        )
+      }
+      // boot script
+      headEl.append(
+        $$('script').text(bootscript(this.props))
       )
     }
-    // store the props
-    headEl.append(
-      $$('script').attr({
-        id: 'substance-page-props',
-        type: 'application/json'
-      }).text(JSON.stringify(this.props))
-    )
-    // boot script
-    headEl.append(
-      $$('script').text(bootscript(this.props))
-    )
 
     return headEl
   }
