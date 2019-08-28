@@ -1,12 +1,12 @@
 import generatePage from './generatePage'
 import requireUncached from './_requireUncached'
+import omit from './_omit'
 
 export default function createEngine (engineOptions = {}) {
   function renderFile (filename, options, cb) {
     const settings = options.settings
-    const props = options._locals || {}
+    const props = omit(options, 'settings', 'cache', '_locals')
     const path = require('path')
-    // console.log('renderFile', filename, options)
     const pageName = path.basename(filename, '.page.js')
     const viewsDir = settings.views
     const configFile = path.join(viewsDir, 'config.json')
