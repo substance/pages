@@ -1,4 +1,5 @@
 import { Component } from 'substance'
+import bootscript from './_bootscript'
 
 export default class Page extends Component {
   render ($$) {
@@ -33,16 +34,18 @@ export default class Page extends Component {
         })
       )
     }
+    // store the props
+    headEl.append(
+      $$('script').attr({
+        id: 'substance-page-props',
+        type: 'application/json'
+      }).text(JSON.stringify(this.props))
+    )
     // boot script
-    if (this.props.bootscriptUrl) {
-      headEl.append(
-        $$('script').attr('src', this.props.bootscriptUrl)
-      )
-    } else if (this.props.bootscript) {
-      headEl.append(
-        $$('script').text(this.props.bootscript)
-      )
-    }
+    headEl.append(
+      $$('script').text(bootscript(this.props))
+    )
+
     return headEl
   }
 

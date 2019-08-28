@@ -13,7 +13,7 @@ export default function createEngine (engineOptions = {}) {
     try {
       const chunks = require(chunksFile)
       const PageClass = require(filename)[`${pageName}Page`]
-      html = generatePage(PageClass, Object.assign({}, props, { chunks }))
+      html = generatePage(PageClass, Object.assign({}, props, { chunks, pageName }))
       cb(null, html)
     } catch (err) {
       cb(err)

@@ -1,15 +1,28 @@
 const path = require('path')
 
+const DOT = '.'.charCodeAt(0)
+
 /**
  * Creates a webpack configuration
  * @param {object} views
  */
-export default function _createWebpackConfig (views, options = {}) {
+export default function _createWebpackConfig (viewsConfig, options = {}) {
   const mode = options.mode || 'production'
   const outputDir = options.outputDir || 'dist'
   const publicDir = path.join(outputDir, 'public')
-  const viewsDir = path.join(outputDir, 'views')
   const cwd = process.cwd()
+
+  const entries = {}
+  Object.keys(viewsConfig).forEach(name => {
+    const viewConfig = viewsConfig[name]
+    name = viewConfig.name || name
+    let entry = viewConfig.entry
+    if (!entry) throw new Error("'entry' is mandatory")
+    if (entry.charCodeAt(0) !== DOT) {
+      entry = './' + entry
+    }
+    entries[name] = entry
+  })
 
   const jsxSupport = {
     rules: [
@@ -21,7 +34,7 @@ export default function _createWebpackConfig (views, options = {}) {
           options: {
             plugins: [
               ['@babel/plugin-transform-react-jsx', {
-                pragma: 'this.renderingEngine.createElement', // default pragma is React.createElement
+                pragma: 'RenderingEngine.createElement', // default pragma is React.createElement
                 pragmaFrag: '', // default is React.Fragment
                 throwIfNamespace: false // defaults to true
               }]
@@ -32,7 +45,7 @@ export default function _createWebpackConfig (views, options = {}) {
     ]
   }
   const devConfig = {
-    entry: views,
+    entry: entries,
     output: {
       path: path.join(cwd, publicDir, 'js'),
       filename: '[name].page.js',
@@ -103,9 +116,9 @@ export default function _createWebpackConfig (views, options = {}) {
 
   // this is used internally only by the site generator
   const nodeConfig = {
-    entry: views,
+    entry: entries,
     output: {
-      path: path.join(cwd, viewsDir),
+      path: path.join(cwd, outputDir, 'views'),
       filename: '[name].page.js',
       library: '[name]Page',
       libraryTarget: 'commonjs',
